@@ -1,21 +1,41 @@
-// Importa Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+// Importa Firestore dal file di configurazione
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { db } from "./firebase-config.js"; // Assicurati che il file di configurazione Firebase sia corretto
 
-// Configurazione Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyD2mZiGw5qMcCQQCiPc9PMInCF54bNvrdE",
-    authDomain: "babbo-natale-segreto-bde25.firebaseapp.com",
-    projectId: "babbo-natale-segreto-bde25",
-    storageBucket: "babbo-natale-segreto-bde25.firebasestorage.app",
-    messagingSenderId: "92176963194",
-    appId: "1:92176963194:web:9013a73f0dac82dc1f8dc3",
-    measurementId: "G-NM8SHJYFHQ"
-};
+// Funzione per leggere i dati dal documento
+async function leggiMessaggio() {
+    try {
+        const docRef = doc(db, "dati", "messaggio"); // Modifica "messaggio" con l'ID corretto del tuo documento
+        const docSnap = await getDoc(docRef);
 
-// Inizializza Firebase e Firestore
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+        if (docSnap.exists()) {
+            const messaggio = docSnap.data().messaggio;
+            console.log("Messaggio dal database:", messaggio);
 
-// Esporta `db` per usarlo in altri script
-export { db };
+            // Visualizza il messaggio nella pagina
+            document.getElementById("output").textContent = messaggio;
+        } else {
+            console.log("Nessun documento trovato!");
+        }
+    } catch (error) {
+        console.error("Errore durante la lettura dei dati:", error);
+    }
+}
+
+// Funzione per salvare un nuovo messaggio nel database
+async function salvaMessaggio() {
+    try {
+        await setDoc(doc(db, "dati", "messaggio"), {
+            messaggio: "Ciao dal tuo Babbo Natale aggiornato!"
+        });
+        alert("Dati salvati con successo!");
+    } catch (error) {
+        console.error("Errore durante il salvataggio dei dati:", error);
+    }
+}
+
+// Aggiungi gli eventi per i pulsanti
+document.getElementById("saveData").addEventListener("click", salvaMessaggio);
+
+// Chiamare la funzione per leggere i dati al caricamento della pagina
+leggiMessaggio();
