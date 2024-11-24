@@ -23,7 +23,16 @@ let passwords = {};
 let assignments = {};
 let isAssignmentsVisible = false;
 
-// Funzione per leggere i dati dal database
+// Riferimenti ai pannelli e agli elementi
+const userLoginPanel = document.getElementById("user-login-panel");
+const userRevealPanel = document.getElementById("user-reveal-panel");
+const adminLoginPanel = document.getElementById("admin-login-panel");
+const adminPanel = document.getElementById("admin-panel");
+const assignmentsList = document.getElementById("assignments-list");
+const toggleAssignmentsCheckbox = document.getElementById("toggle-assignments");
+const revealCard = document.getElementById("reveal-card");
+
+// Funzioni Firebase
 async function loadData() {
     try {
         const docRef = doc(db, "dati", "main");
@@ -40,11 +49,10 @@ async function loadData() {
             console.log("Nessun documento trovato!");
         }
     } catch (error) {
-        console.error("Errore durante la lettura dei dati:", error);
+        console.error("Errore durante il caricamento dei dati:", error);
     }
 }
 
-// Funzione per salvare i dati nel database
 async function saveData() {
     try {
         const docRef = doc(db, "dati", "main");
@@ -59,41 +67,7 @@ async function saveData() {
     }
 }
 
-// Riferimenti ai pannelli
-const adminLoginPanel = document.getElementById("admin-login-panel");
-const adminPanel = document.getElementById("admin-panel");
-const userLoginPanel = document.getElementById("user-login-panel");
-const userRevealPanel = document.getElementById("user-reveal-panel");
-
-// Gestione del login admin
-document.getElementById("admin-login-btn").addEventListener("click", () => {
-    const password = document.getElementById("admin-password").value.trim();
-    const error = document.getElementById("admin-error-message");
-    error.textContent = "";
-
-    if (password === "admin123") {
-        // Mostra il pannello admin e nascondi il login
-        adminLoginPanel.classList.add("hidden");
-        adminPanel.classList.remove("hidden");
-    } else {
-        error.textContent = "Password errata!";
-    }
-});
-
-// Torna indietro al login utente
-document.getElementById("admin-back-btn").addEventListener("click", () => {
-    adminLoginPanel.classList.add("hidden");
-    userLoginPanel.classList.remove("hidden");
-});
-
-// Logout admin
-document.getElementById("admin-logout-btn").addEventListener("click", () => {
-    adminPanel.classList.add("hidden");
-    userLoginPanel.classList.remove("hidden");
-    document.getElementById("admin-password").value = "";
-});
-
-// Login utente e visualizzazione del destinatario
+// Gestione del login utente
 document.getElementById("user-login-btn").addEventListener("click", () => {
     const password = document.getElementById("user-password").value.trim();
     const errorMessage = document.getElementById("user-error-message");
@@ -115,8 +89,8 @@ document.getElementById("user-login-btn").addEventListener("click", () => {
     userRevealPanel.classList.remove("hidden");
     revealName.textContent = assignments[user];
 
-    // Animazione della card e del nome
-    document.getElementById("reveal-card").style.animation = "fade-in 1s ease-in-out";
+    // Animazione del nome e della card
+    revealCard.style.animation = "fade-in 1s ease-in-out";
     revealName.style.animation = "zoom-in 0.6s ease-in-out";
 });
 
@@ -125,6 +99,33 @@ document.getElementById("logout-btn").addEventListener("click", () => {
     userRevealPanel.classList.add("hidden");
     userLoginPanel.classList.remove("hidden");
     document.getElementById("user-password").value = "";
+});
+
+// Login admin
+document.getElementById("admin-login-btn").addEventListener("click", () => {
+    const password = document.getElementById("admin-password").value.trim();
+    const error = document.getElementById("admin-error-message");
+    error.textContent = "";
+
+    if (password === "admin123") {
+        adminLoginPanel.classList.add("hidden");
+        adminPanel.classList.remove("hidden");
+    } else {
+        error.textContent = "Password errata!";
+    }
+});
+
+// Torna indietro dal login admin
+document.getElementById("admin-back-btn").addEventListener("click", () => {
+    adminLoginPanel.classList.add("hidden");
+    userLoginPanel.classList.remove("hidden");
+});
+
+// Logout admin
+document.getElementById("admin-logout-btn").addEventListener("click", () => {
+    adminPanel.classList.add("hidden");
+    userLoginPanel.classList.remove("hidden");
+    document.getElementById("admin-password").value = "";
 });
 
 // Aggiungi partecipante
@@ -138,6 +139,7 @@ document.getElementById("add-participant-btn").addEventListener("click", () => {
     document.getElementById("participant-name").value = "";
     document.getElementById("participant-password").value = "";
     updateParticipantsList();
+    saveData();
 });
 
 // Genera abbinamenti
@@ -153,10 +155,11 @@ document.getElementById("generate-assignments-btn").addEventListener("click", ()
         assignments[shuffled[i]] = shuffled[(i + 1) % shuffled.length];
     }
     updateAssignmentsList();
+    saveData();
 });
 
 // Visualizza/nasconde gli abbinamenti
-document.getElementById("toggle-assignments").addEventListener("change", (e) => {
+toggleAssignmentsCheckbox.addEventListener("change", (e) => {
     isAssignmentsVisible = e.target.checked;
     updateAssignmentsList();
 });
@@ -176,27 +179,15 @@ document.getElementById("reset-btn").addEventListener("click", () => {
 function updateParticipantsList() {
     const list = document.getElementById("participants-list");
     list.innerHTML = "";
-    participants.forEach((name, index) => {
+    participants.forEach((name) => {
         const li = document.createElement("li");
         li.textContent = `${name} (password: ${passwords[name]})`;
-
-        const removeBtn = document.createElement("button");
-        removeBtn.textContent = "Rimuovi";
-        removeBtn.addEventListener("click", () => {
-            participants.splice(index, 1);
-            delete passwords[name];
-            updateParticipantsList();
-        });
-
-        li.appendChild(removeBtn);
         list.appendChild(li);
     });
-    saveData();
 }
 
 // Aggiorna la lista degli abbinamenti
 function updateAssignmentsList() {
-    const assignmentsList = document.getElementById("assignments-list");
     assignmentsList.innerHTML = "";
     if (isAssignmentsVisible) {
         Object.entries(assignments).forEach(([giver, receiver]) => {
@@ -205,8 +196,7 @@ function updateAssignmentsList() {
             assignmentsList.appendChild(li);
         });
     }
-    saveData();
 }
 
-// Inizializza
+// Inizializza il sito caricando i dati
 loadData();
