@@ -87,31 +87,7 @@
     <p>🎄 Buone Feste da Babbo Natale Segreto! 🎁</p>
   </footer>
 
-  <!-- Firebase Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-    // Configurazione Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyD2mZiGw5qMcCQQCiPc9PMInCF54bNvrdE",
-      authDomain: "babbo-natale-segreto-bde25.firebaseapp.com",
-      projectId: "babbo-natale-segreto-bde25",
-      storageBucket: "babbo-natale-segreto-bde25.firebasestorage.app",
-      messagingSenderId: "92176963194",
-      appId: "1:92176963194:web:9013a73f0dac82dc1f8dc3",
-      measurementId: "G-NM8SHJYFHQ"
-    };
-
-    // Inizializza Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Esporta il database per usarlo nello script
-    export { db };
-  </script>
-
-  <!-- Collegamento allo script principale -->
+  <!-- Collegamento allo script -->
   <script src="script.js" type="module"></script>
 </body>
 </html>
