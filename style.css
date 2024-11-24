@@ -85,7 +85,7 @@ body {
   }
 }
 
-/* App container */
+/* Contenitore principale */
 #app {
   background: #ffffff;
   padding: 40px;
@@ -102,7 +102,7 @@ body {
 
 /* Titoli */
 h1 {
-  font-size: 2em;
+  font-size: 2.2em;
   color: #b22222;
   margin-bottom: 15px;
   text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.15);
@@ -112,6 +112,17 @@ h1 {
   font-size: 1.1em;
   color: #555;
   margin-bottom: 25px;
+}
+
+/* Messaggi di successo o errore */
+.success {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.error {
+  color: #e74c3c;
+  font-weight: bold;
 }
 
 /* Pulsanti nella lista */
