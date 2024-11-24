@@ -1,19 +1,41 @@
-// Importa Firestore dal file di configurazione
-import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { db } from "./firebase-config.js"; // Assicurati che il file di configurazione Firebase sia corretto
+// Importa Firebase SDK e Firestore
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-// Funzione per leggere i dati dal documento
-async function leggiMessaggio() {
+// Configurazione Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyD2mZiGw5qMcCQQCiPc9PMInCF54bNvrdE",
+    authDomain: "babbo-natale-segreto-bde25.firebaseapp.com",
+    projectId: "babbo-natale-segreto-bde25",
+    storageBucket: "babbo-natale-segreto-bde25.firebasestorage.app",
+    messagingSenderId: "92176963194",
+    appId: "1:92176963194:web:9013a73f0dac82dc1f8dc3",
+    measurementId: "G-NM8SHJYFHQ"
+};
+
+// Inizializza Firebase e Firestore
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Variabili principali
+let participants = [];
+let passwords = {};
+let assignments = {};
+let isAssignmentsVisible = false;
+
+// Funzione per leggere i dati dal database
+async function loadData() {
     try {
-        const docRef = doc(db, "dati", "messaggio"); // Modifica "messaggio" con l'ID corretto del tuo documento
+        const docRef = doc(db, "dati", "main");
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-            const messaggio = docSnap.data().messaggio;
-            console.log("Messaggio dal database:", messaggio);
-
-            // Visualizza il messaggio nella pagina
-            document.getElementById("output").textContent = messaggio;
+            const data = docSnap.data();
+            participants = data.participants || [];
+            passwords = data.passwords || {};
+            assignments = data.assignments || {};
+            updateParticipantsList();
+            updateAssignmentsList();
         } else {
             console.log("Nessun documento trovato!");
         }
@@ -22,20 +44,185 @@ async function leggiMessaggio() {
     }
 }
 
-// Funzione per salvare un nuovo messaggio nel database
-async function salvaMessaggio() {
+// Funzione per salvare i dati nel database
+async function saveData() {
     try {
-        await setDoc(doc(db, "dati", "messaggio"), {
-            messaggio: "Ciao dal tuo Babbo Natale aggiornato!"
+        const docRef = doc(db, "dati", "main");
+        await setDoc(docRef, {
+            participants,
+            passwords,
+            assignments
         });
-        alert("Dati salvati con successo!");
+        console.log("Dati salvati con successo!");
     } catch (error) {
         console.error("Errore durante il salvataggio dei dati:", error);
     }
 }
 
-// Aggiungi gli eventi per i pulsanti
-document.getElementById("saveData").addEventListener("click", salvaMessaggio);
+// Fiocchi di neve (animazione)
+document.addEventListener("DOMContentLoaded", () => {
+    const snowflakesContainer = document.getElementById("snowflakes-container");
 
-// Chiamare la funzione per leggere i dati al caricamento della pagina
-leggiMessaggio();
+    const snowflakeCount = 100;
+    for (let i = 0; i < snowflakeCount; i++) {
+        const snowflake = document.createElement("div");
+        snowflake.classList.add("snowflake");
+
+        snowflake.style.left = `${Math.random() * 100}%`;
+        snowflake.style.animationDuration = `${5 + Math.random() * 10}s`;
+        snowflake.style.animationDelay = `${Math.random() * 5}s`;
+
+        snowflakesContainer.appendChild(snowflake);
+    }
+});
+
+// Passa al pannello admin
+document.getElementById("go-to-admin-btn").addEventListener("click", () => {
+    userLoginPanel.classList.add("hidden");
+    adminLoginPanel.classList.remove("hidden");
+});
+
+// Login utente e visualizzazione del destinatario
+document.getElementById("user-login-btn").addEventListener("click", () => {
+    const password = document.getElementById("user-password").value.trim();
+    const errorMessage = document.getElementById("user-error-message");
+    const revealName = document.getElementById("reveal-name");
+    errorMessage.textContent = "";
+
+    const user = Object.keys(passwords).find((name) => passwords[name] === password);
+    if (!user) {
+        errorMessage.textContent = "Password non valida!";
+        return;
+    }
+
+    if (!assignments[user]) {
+        errorMessage.textContent = "Non ci sono ancora abbinamenti!";
+        return;
+    }
+
+    userLoginPanel.classList.add("hidden");
+    userRevealPanel.classList.remove("hidden");
+    revealName.textContent = assignments[user];
+
+    revealCard.style.animation = "none";
+    revealName.style.animation = "none";
+
+    setTimeout(() => {
+        revealCard.style.animation = "fade-in 1s ease-in-out";
+        revealName.style.animation = "zoom-in 0.6s ease-in-out";
+    }, 50);
+});
+
+// Logout utente
+document.getElementById("logout-btn").addEventListener("click", () => {
+    userRevealPanel.classList.add("hidden");
+    userLoginPanel.classList.remove("hidden");
+    document.getElementById("user-password").value = "";
+});
+
+// Admin funzionalità
+document.getElementById("admin-login-btn").addEventListener("click", () => {
+    const password = document.getElementById("admin-password").value;
+    const error = document.getElementById("admin-error-message");
+    error.textContent = "";
+
+    if (password === "admin123") {
+        adminLoginPanel.classList.add("hidden");
+        adminPanel.classList.remove("hidden");
+    } else {
+        error.textContent = "Password errata!";
+    }
+});
+
+document.getElementById("admin-back-btn").addEventListener("click", () => {
+    adminLoginPanel.classList.add("hidden");
+    userLoginPanel.classList.remove("hidden");
+});
+
+document.getElementById("admin-logout-btn").addEventListener("click", () => {
+    adminPanel.classList.add("hidden");
+    userLoginPanel.classList.remove("hidden");
+});
+
+// Aggiungi partecipante
+document.getElementById("add-participant-btn").addEventListener("click", () => {
+    const name = document.getElementById("participant-name").value.trim();
+    const password = document.getElementById("participant-password").value.trim();
+    if (!name || !password || participants.includes(name)) return;
+
+    participants.push(name);
+    passwords[name] = password;
+    document.getElementById("participant-name").value = "";
+    document.getElementById("participant-password").value = "";
+    updateParticipantsList();
+});
+
+// Genera abbinamenti
+document.getElementById("generate-assignments-btn").addEventListener("click", () => {
+    if (participants.length < 2) {
+        alert("Servono almeno 2 partecipanti!");
+        return;
+    }
+
+    assignments = {};
+    const shuffled = [...participants].sort(() => 0.5 - Math.random());
+    for (let i = 0; i < shuffled.length; i++) {
+        assignments[shuffled[i]] = shuffled[(i + 1) % shuffled.length];
+    }
+    updateAssignmentsList();
+});
+
+// Visualizza/nasconde gli abbinamenti
+toggleAssignmentsCheckbox.addEventListener("change", (e) => {
+    isAssignmentsVisible = e.target.checked;
+    updateAssignmentsList();
+});
+
+// Reset dati
+document.getElementById("reset-btn").addEventListener("click", () => {
+    if (confirm("Sei sicuro di voler resettare tutti i dati?")) {
+        participants = [];
+        passwords = {};
+        assignments = {};
+        updateParticipantsList();
+        updateAssignmentsList();
+    }
+});
+
+// Aggiorna la lista dei partecipanti
+function updateParticipantsList() {
+    const list = document.getElementById("participants-list");
+    list.innerHTML = "";
+    participants.forEach((name, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${name} (password: ${passwords[name]})`;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Rimuovi";
+        removeBtn.addEventListener("click", () => {
+            participants.splice(index, 1);
+            delete passwords[name];
+            updateParticipantsList();
+        });
+
+        li.appendChild(removeBtn);
+        list.appendChild(li);
+    });
+    saveData();
+}
+
+// Aggiorna la lista degli abbinamenti
+function updateAssignmentsList() {
+    assignmentsList.innerHTML = "";
+    if (isAssignmentsVisible) {
+        Object.entries(assignments).forEach(([giver, receiver]) => {
+            const li = document.createElement("li");
+            li.textContent = `${giver} \u2192 ${receiver}`;
+            assignmentsList.appendChild(li);
+        });
+    }
+    saveData();
+}
+
+// Inizializza
+loadData();
