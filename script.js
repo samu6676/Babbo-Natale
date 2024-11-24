@@ -1,196 +1,148 @@
-// Importa Firebase SDK e Firestore
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+// Inizializza Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 // Configurazione Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyD2mZiGw5qMcCQQCiPc9PMInCF54bNvrdE",
-    authDomain: "babbo-natale-segreto-bde25.firebaseapp.com",
-    projectId: "babbo-natale-segreto-bde25",
-    storageBucket: "babbo-natale-segreto-bde25.firebasestorage.app",
-    messagingSenderId: "92176963194",
-    appId: "1:92176963194:web:9013a73f0dac82dc1f8dc3",
-    measurementId: "G-NM8SHJYFHQ"
+  apiKey: "AIzaSyD2mZiGw5qMcCQQCiPc9PMInCF54bNvrdE",
+  authDomain: "babbo-natale-segreto-bde25.firebaseapp.com",
+  projectId: "babbo-natale-segreto-bde25",
+  storageBucket: "babbo-natale-segreto-bde25.firebasestorage.app",
+  messagingSenderId: "92176963194",
+  appId: "1:92176963194:web:9013a73f0dac82dc1f8dc3",
+  measurementId: "G-NM8SHJYFHQ",
 };
 
-// Inizializza Firebase e Firestore
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Variabili principali
-let participants = [];
-let passwords = {};
-let assignments = {};
-let isAssignmentsVisible = false;
-
-// Riferimenti ai pannelli e agli elementi
 const userLoginPanel = document.getElementById("user-login-panel");
 const userRevealPanel = document.getElementById("user-reveal-panel");
 const adminLoginPanel = document.getElementById("admin-login-panel");
 const adminPanel = document.getElementById("admin-panel");
-const assignmentsList = document.getElementById("assignments-list");
-const toggleAssignmentsCheckbox = document.getElementById("toggle-assignments");
-const revealCard = document.getElementById("reveal-card");
 
 // Funzioni Firebase
-async function loadData() {
-    try {
-        const docRef = doc(db, "dati", "main");
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            participants = data.participants || [];
-            passwords = data.passwords || {};
-            assignments = data.assignments || {};
-            updateParticipantsList();
-            updateAssignmentsList();
-        } else {
-            console.log("Nessun documento trovato!");
-        }
-    } catch (error) {
-        console.error("Errore durante il caricamento dei dati:", error);
-    }
+async function saveParticipant(name, password) {
+  await setDoc(doc(db, "participants", name), { password });
 }
 
-async function saveData() {
-    try {
-        const docRef = doc(db, "dati", "main");
-        await setDoc(docRef, {
-            participants,
-            passwords,
-            assignments
-        });
-        console.log("Dati salvati con successo!");
-    } catch (error) {
-        console.error("Errore durante il salvataggio dei dati:", error);
-    }
+async function saveAssignments(assignments) {
+  await setDoc(doc(db, "assignments", "data"), { assignments });
 }
 
-// Gestione del login utente
-document.getElementById("user-login-btn").addEventListener("click", () => {
-    const password = document.getElementById("user-password").value.trim();
-    const errorMessage = document.getElementById("user-error-message");
-    const revealName = document.getElementById("reveal-name");
-    errorMessage.textContent = "";
+async function getAssignments() {
+  const docSnap = await getDoc(doc(db, "assignments", "data"));
+  return docSnap.exists() ? docSnap.data().assignments : null;
+}
 
-    const user = Object.keys(passwords).find((name) => passwords[name] === password);
-    if (!user) {
-        errorMessage.textContent = "Password non valida!";
-        return;
-    }
+async function getParticipant(name) {
+  const docSnap = await getDoc(doc(db, "participants", name));
+  return docSnap.exists() ? docSnap.data() : null;
+}
 
-    if (!assignments[user]) {
-        errorMessage.textContent = "Non ci sono ancora abbinamenti!";
-        return;
-    }
-
-    userLoginPanel.classList.add("hidden");
-    userRevealPanel.classList.remove("hidden");
-    revealName.textContent = assignments[user];
+// Eventi
+document.getElementById("go-to-admin-btn").addEventListener("click", () => {
+  userLoginPanel.classList.add("hidden");
+  adminLoginPanel.classList.remove("hidden");
 });
 
-// Logout utente
-document.getElementById("logout-btn").addEventListener("click", () => {
-    userRevealPanel.classList.add("hidden");
-    userLoginPanel.classList.remove("hidden");
-    document.getElementById("user-password").value = "";
-});
-
-// Login admin
 document.getElementById("admin-login-btn").addEventListener("click", () => {
-    const password = document.getElementById("admin-password").value.trim();
-    const error = document.getElementById("admin-error-message");
-    error.textContent = "";
-
-    if (password === "admin123") {
-        adminLoginPanel.classList.add("hidden");
-        adminPanel.classList.remove("hidden");
-    } else {
-        error.textContent = "Password errata!";
-    }
-});
-
-// Torna indietro dal login admin
-document.getElementById("admin-back-btn").addEventListener("click", () => {
+  const password = document.getElementById("admin-password").value.trim();
+  if (password === "admin123") {
     adminLoginPanel.classList.add("hidden");
-    userLoginPanel.classList.remove("hidden");
+    adminPanel.classList.remove("hidden");
+  } else {
+    document.getElementById("admin-error-message").textContent = "Password errata!";
+  }
 });
 
-// Logout admin
-document.getElementById("admin-logout-btn").addEventListener("click", () => {
-    adminPanel.classList.add("hidden");
-    userLoginPanel.classList.remove("hidden");
-    document.getElementById("admin-password").value = "";
+document.getElementById("add-participant-btn").addEventListener("click", async () => {
+  const name = document.getElementById("participant-name").value.trim();
+  const password = document.getElementById("participant-password").value.trim();
+  if (!name || !password) {
+    alert("Nome o password non validi!");
+    return;
+  }
+
+  await saveParticipant(name, password);
+  alert("Partecipante aggiunto!");
 });
 
-// Aggiungi partecipante
-document.getElementById("add-participant-btn").addEventListener("click", () => {
-    const name = document.getElementById("participant-name").value.trim();
-    const password = document.getElementById("participant-password").value.trim();
-    if (!name || !password || participants.includes(name)) return;
+document.getElementById("generate-assignments-btn").addEventListener("click", async () => {
+  const participants = [];
+  const participantsRef = db.collection("participants");
+  const snapshot = await participantsRef.get();
+  snapshot.forEach((doc) => {
+    participants.push(doc.id);
+  });
 
-    participants.push(name);
-    passwords[name] = password;
-    updateParticipantsList();
-    saveData();
+  if (participants.length < 2) {
+    alert("Servono almeno 2 partecipanti!");
+    return;
+  }
+
+  const shuffled = [...participants].sort(() => 0.5 - Math.random());
+  const assignments = {};
+  for (let i = 0; i < shuffled.length; i++) {
+    assignments[shuffled[i]] = shuffled[(i + 1) % shuffled.length];
+  }
+
+  await saveAssignments(assignments);
+  alert("Abbinamenti generati!");
 });
 
-// Genera abbinamenti
-document.getElementById("generate-assignments-btn").addEventListener("click", () => {
-    if (participants.length < 2) {
-        alert("Servono almeno 2 partecipanti!");
-        return;
-    }
+document.getElementById("toggle-assignments").addEventListener("change", async (e) => {
+  const assignments = await getAssignments();
+  const assignmentsList = document.getElementById("assignments-list");
 
-    assignments = {};
-    const shuffled = [...participants].sort(() => 0.5 - Math.random());
-    for (let i = 0; i < shuffled.length; i++) {
-        assignments[shuffled[i]] = shuffled[(i + 1) % shuffled.length];
-    }
-    updateAssignmentsList();
-    saveData();
-});
-
-// Visualizza/nasconde gli abbinamenti
-toggleAssignmentsCheckbox.addEventListener("change", (e) => {
-    isAssignmentsVisible = e.target.checked;
-    updateAssignmentsList();
-});
-
-// Reset dati
-document.getElementById("reset-btn").addEventListener("click", () => {
-    if (confirm("Sei sicuro di voler resettare tutti i dati?")) {
-        participants = [];
-        passwords = {};
-        assignments = {};
-        updateParticipantsList();
-        updateAssignmentsList();
-    }
-});
-
-// Aggiorna la lista dei partecipanti
-function updateParticipantsList() {
-    const list = document.getElementById("participants-list");
-    list.innerHTML = "";
-    participants.forEach((name) => {
-        const li = document.createElement("li");
-        li.textContent = `${name} (password: ${passwords[name]})`;
-        list.appendChild(li);
-    });
-}
-
-// Aggiorna la lista degli abbinamenti
-function updateAssignmentsList() {
+  if (e.target.checked && assignments) {
     assignmentsList.innerHTML = "";
-    if (isAssignmentsVisible) {
-        Object.entries(assignments).forEach(([giver, receiver]) => {
-            const li = document.createElement("li");
-            li.textContent = `${giver} → ${receiver}`;
-            assignmentsList.appendChild(li);
-        });
-    }
-}
+    Object.entries(assignments).forEach(([giver, receiver]) => {
+      const li = document.createElement("li");
+      li.textContent = `${giver} → ${receiver}`;
+      assignmentsList.appendChild(li);
+    });
+    assignmentsList.classList.remove("hidden");
+  } else {
+    assignmentsList.classList.add("hidden");
+  }
+});
 
-// Inizializza il sito caricando i dati
-loadData();
+document.getElementById("reset-btn").addEventListener("click", async () => {
+  if (confirm("Sei sicuro di voler resettare tutti i dati?")) {
+    await db.collection("participants").get().then((querySnapshot) => {
+      querySnapshot.forEach((doc) => doc.ref.delete());
+    });
+    await db.collection("assignments").doc("data").delete();
+    alert("Dati resettati!");
+  }
+});
+
+// Login utente
+document.getElementById("user-login-btn").addEventListener("click", async () => {
+  const password = document.getElementById("user-password").value.trim();
+  const participantsRef = db.collection("participants");
+  const snapshot = await participantsRef.where("password", "==", password).get();
+
+  if (snapshot.empty) {
+    document.getElementById("user-error-message").textContent = "Password non valida!";
+    return;
+  }
+
+  const user = snapshot.docs[0].id;
+  const assignments = await getAssignments();
+  if (!assignments || !assignments[user]) {
+    document.getElementById("user-error-message").textContent = "Nessun abbinamento disponibile!";
+    return;
+  }
+
+  document.getElementById("reveal-name").textContent = assignments[user];
+  userLoginPanel.classList.add("hidden");
+  userRevealPanel.classList.remove("hidden");
+});
+
+document.getElementById("logout-btn").addEventListener("click", () => {
+  userRevealPanel.classList.add("hidden");
+  userLoginPanel.classList.remove("hidden");
+});
