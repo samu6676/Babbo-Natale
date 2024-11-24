@@ -1,0 +1,285 @@
+/* Corpo generale */
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #e0f7fa, #dfe8ff), url('https://www.transparenttextures.com/patterns/stardust.png');
+  background-blend-mode: overlay;
+  color: #333;
+  text-align: center;
+}
+
+/* Nascondi pannelli non visibili */
+.hidden {
+  display: none;
+}
+
+/* Contenitore della neve */
+#snowflakes-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+/* Fiocchi di neve */
+.snowflake {
+  position: absolute;
+  top: -10%;
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+  animation: fall linear infinite;
+  opacity: 0.9;
+}
+
+/* Animazione della neve */
+@keyframes fall {
+  0% {
+    transform: translateY(-100px) translateX(0);
+  }
+  100% {
+    transform: translateY(110vh) translateX(calc(50px * var(--random-direction)));
+  }
+}
+
+.snowflake {
+  --random-direction: calc((random() * 2) - 1);
+}
+
+/* Luci di Natale */
+.christmas-lights {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ff4747;
+  box-shadow: 0 0 10px rgba(255, 71, 71, 0.8);
+  animation: blink 1.5s infinite alternate;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* App container */
+#app {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Titoli */
+h1 {
+  font-size: 2em;
+  color: #b22222;
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.15);
+}
+
+.subtitle {
+  font-size: 1.1em;
+  color: #555;
+  margin-bottom: 25px;
+}
+
+/* Pulsanti nella lista */
+ul li button {
+  padding: 10px 14px;
+  background-color: #b22222;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+ul li button:hover {
+  background-color: #8b0000;
+  transform: scale(1.05);
+}
+
+/* Pulsanti generali */
+button, ul li button {
+  display: inline-block;
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 15px;
+  background-color: #b22222;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+}
+
+button:hover, ul li button:hover {
+  background-color: #8b0000;
+  transform: scale(1.05);
+}
+
+/* Pulsanti secondari */
+.secondary-btn {
+  background-color: #e67e22;
+  font-weight: bold;
+}
+
+.secondary-btn:hover {
+  background-color: #d35400;
+}
+
+.secondary-btn:focus {
+  outline: 2px solid #d35400;
+}
+
+/* Lista dei partecipanti */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #fffefa;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+}
+
+/* Card del destinatario */
+.reveal-card {
+  margin: 25px auto;
+  padding: 25px;
+  background: linear-gradient(145deg, #ffffff, #f1f1f1);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  animation: fade-in 1s ease-in-out;
+}
+
+.reveal-card p {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #000;
+  margin: 0;
+  animation: zoom-in 0.6s ease-in-out;
+}
+
+/* Input password */
+.password-input {
+  padding: 18px;
+  width: calc(100% - 36px);
+  margin: 0 auto 25px auto;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 1.3em;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.password-input:focus {
+  border-color: #b22222;
+  box-shadow: 0 0 10px rgba(178, 34, 34, 0.5);
+  outline: none;
+}
+
+/* Animazioni */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoom-in {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Link Admin */
+.admin-link {
+  background: none;
+  color: #3498db;
+  text-decoration: underline;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  margin-top: 15px;
+  transition: color 0.2s ease;
+}
+
+.admin-link:hover {
+  color: #2980b9;
+}
+
+/* Footer */
+footer {
+  margin-top: 30px;
+  font-size: 1em;
+  color: #666;
+  background-color: #fffefa;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  width: 100%;
+}
+
+/* Media query per schermi piccoli */
+@media (max-width: 600px) {
+  body {
+    padding: 20px;
+    align-items: flex-start;
+  }
+  #app {
+    max-width: 100%;
+  }
+}
