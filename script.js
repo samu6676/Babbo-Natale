@@ -88,10 +88,6 @@ document.getElementById("user-login-btn").addEventListener("click", () => {
     userLoginPanel.classList.add("hidden");
     userRevealPanel.classList.remove("hidden");
     revealName.textContent = assignments[user];
-
-    // Animazione del nome e della card
-    revealCard.style.animation = "fade-in 1s ease-in-out";
-    revealName.style.animation = "zoom-in 0.6s ease-in-out";
 });
 
 // Logout utente
@@ -136,8 +132,6 @@ document.getElementById("add-participant-btn").addEventListener("click", () => {
 
     participants.push(name);
     passwords[name] = password;
-    document.getElementById("participant-name").value = "";
-    document.getElementById("participant-password").value = "";
     updateParticipantsList();
     saveData();
 });
