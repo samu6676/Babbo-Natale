@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Babbo Natale Segreto</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Contenitore per l'animazione della neve -->
+  <div id="snowflakes-container"></div>
+
+  <!-- Luci di Natale -->
+  <div class="christmas-lights">
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+    <div class="light"></div>
+  </div>
+
+  <!-- Contenitore principale -->
+  <div id="app">
+    <!-- User Login Panel -->
+    <div id="user-login-panel" class="panel">
+      <h1>🎅 Babbo Natale Segreto 🎄</h1>
+      <p class="subtitle">Inserisci la tua password per scoprire a chi fare il regalo!</p>
+      <input type="password" id="user-password" class="password-input" placeholder="Inserisci la tua password">
+      <button id="user-login-btn">Accedi</button>
+      <p id="user-error-message" class="error"></p>
+      <button id="go-to-admin-btn" class="admin-link">Accesso Admin</button>
+    </div>
+
+    <!-- User Reveal Panel -->
+    <div id="user-reveal-panel" class="panel hidden">
+      <h1>🎁 Il tuo destinatario è:</h1>
+      <div id="reveal-card" class="reveal-card">
+        <p id="reveal-name" class="highlight"></p>
+      </div>
+      <button id="logout-btn">Esci</button>
+    </div>
+
+    <!-- Admin Login Panel -->
+    <div id="admin-login-panel" class="panel hidden">
+      <h1>🔑 Login Admin</h1>
+      <input type="password" id="admin-password" class="password-input" placeholder="Password Admin">
+      <button id="admin-login-btn">Accedi</button>
+      <p id="admin-error-message" class="error"></p>
+      <button id="admin-back-btn">Indietro</button>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="panel hidden">
+      <div class="admin-header">
+        <h1>🎁 Pannello Admin</h1>
+        <button id="admin-logout-btn">Logout</button>
+      </div>
+
+      <div class="admin-section">
+        <h2>Gestione Partecipanti</h2>
+        <input type="text" id="participant-name" placeholder="Nome partecipante">
+        <input type="password" id="participant-password" class="password-input" placeholder="Password partecipante">
+        <button id="add-participant-btn">Aggiungi Partecipante</button>
+        <ul id="participants-list"></ul>
+      </div>
+
+      <div class="admin-section admin-actions">
+        <h2>Azioni</h2>
+        <button id="generate-assignments-btn">Genera Abbinamenti</button>
+        <label>
+          <input type="checkbox" id="toggle-assignments">
+          Visualizza Assegnazioni
+        </label>
+        <ul id="assignments-list" class="hidden"></ul>
+        <button id="reset-btn" class="secondary-btn">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>🎄 Buone Feste da Babbo Natale Segreto! 🎁</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
