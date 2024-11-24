@@ -1,6 +1,6 @@
 // Importa Firebase SDK e Firestore
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 // Configurazione Firebase
 const firebaseConfig = {
@@ -59,27 +59,38 @@ async function saveData() {
     }
 }
 
-// Fiocchi di neve (animazione)
-document.addEventListener("DOMContentLoaded", () => {
-    const snowflakesContainer = document.getElementById("snowflakes-container");
+// Riferimenti ai pannelli
+const adminLoginPanel = document.getElementById("admin-login-panel");
+const adminPanel = document.getElementById("admin-panel");
+const userLoginPanel = document.getElementById("user-login-panel");
+const userRevealPanel = document.getElementById("user-reveal-panel");
 
-    const snowflakeCount = 100;
-    for (let i = 0; i < snowflakeCount; i++) {
-        const snowflake = document.createElement("div");
-        snowflake.classList.add("snowflake");
+// Gestione del login admin
+document.getElementById("admin-login-btn").addEventListener("click", () => {
+    const password = document.getElementById("admin-password").value.trim();
+    const error = document.getElementById("admin-error-message");
+    error.textContent = "";
 
-        snowflake.style.left = `${Math.random() * 100}%`;
-        snowflake.style.animationDuration = `${5 + Math.random() * 10}s`;
-        snowflake.style.animationDelay = `${Math.random() * 5}s`;
-
-        snowflakesContainer.appendChild(snowflake);
+    if (password === "admin123") {
+        // Mostra il pannello admin e nascondi il login
+        adminLoginPanel.classList.add("hidden");
+        adminPanel.classList.remove("hidden");
+    } else {
+        error.textContent = "Password errata!";
     }
 });
 
-// Passa al pannello admin
-document.getElementById("go-to-admin-btn").addEventListener("click", () => {
-    userLoginPanel.classList.add("hidden");
-    adminLoginPanel.classList.remove("hidden");
+// Torna indietro al login utente
+document.getElementById("admin-back-btn").addEventListener("click", () => {
+    adminLoginPanel.classList.add("hidden");
+    userLoginPanel.classList.remove("hidden");
+});
+
+// Logout admin
+document.getElementById("admin-logout-btn").addEventListener("click", () => {
+    adminPanel.classList.add("hidden");
+    userLoginPanel.classList.remove("hidden");
+    document.getElementById("admin-password").value = "";
 });
 
 // Login utente e visualizzazione del destinatario
@@ -104,13 +115,9 @@ document.getElementById("user-login-btn").addEventListener("click", () => {
     userRevealPanel.classList.remove("hidden");
     revealName.textContent = assignments[user];
 
-    revealCard.style.animation = "none";
-    revealName.style.animation = "none";
-
-    setTimeout(() => {
-        revealCard.style.animation = "fade-in 1s ease-in-out";
-        revealName.style.animation = "zoom-in 0.6s ease-in-out";
-    }, 50);
+    // Animazione della card e del nome
+    document.getElementById("reveal-card").style.animation = "fade-in 1s ease-in-out";
+    revealName.style.animation = "zoom-in 0.6s ease-in-out";
 });
 
 // Logout utente
@@ -118,30 +125,6 @@ document.getElementById("logout-btn").addEventListener("click", () => {
     userRevealPanel.classList.add("hidden");
     userLoginPanel.classList.remove("hidden");
     document.getElementById("user-password").value = "";
-});
-
-// Admin funzionalità
-document.getElementById("admin-login-btn").addEventListener("click", () => {
-    const password = document.getElementById("admin-password").value;
-    const error = document.getElementById("admin-error-message");
-    error.textContent = "";
-
-    if (password === "admin123") {
-        adminLoginPanel.classList.add("hidden");
-        adminPanel.classList.remove("hidden");
-    } else {
-        error.textContent = "Password errata!";
-    }
-});
-
-document.getElementById("admin-back-btn").addEventListener("click", () => {
-    adminLoginPanel.classList.add("hidden");
-    userLoginPanel.classList.remove("hidden");
-});
-
-document.getElementById("admin-logout-btn").addEventListener("click", () => {
-    adminPanel.classList.add("hidden");
-    userLoginPanel.classList.remove("hidden");
 });
 
 // Aggiungi partecipante
@@ -173,7 +156,7 @@ document.getElementById("generate-assignments-btn").addEventListener("click", ()
 });
 
 // Visualizza/nasconde gli abbinamenti
-toggleAssignmentsCheckbox.addEventListener("change", (e) => {
+document.getElementById("toggle-assignments").addEventListener("change", (e) => {
     isAssignmentsVisible = e.target.checked;
     updateAssignmentsList();
 });
@@ -213,11 +196,12 @@ function updateParticipantsList() {
 
 // Aggiorna la lista degli abbinamenti
 function updateAssignmentsList() {
+    const assignmentsList = document.getElementById("assignments-list");
     assignmentsList.innerHTML = "";
     if (isAssignmentsVisible) {
         Object.entries(assignments).forEach(([giver, receiver]) => {
             const li = document.createElement("li");
-            li.textContent = `${giver} \u2192 ${receiver}`;
+            li.textContent = `${giver} → ${receiver}`;
             assignmentsList.appendChild(li);
         });
     }
